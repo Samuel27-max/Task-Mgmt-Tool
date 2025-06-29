@@ -62,7 +62,7 @@ To run this project locally, follow these steps:
 
 ## Live Demo
 
-[Live Demo URL Here](https://samuel27-max.github.io/Task-Mgmt-Tool/)
+[Live Demo URL Here]()
 
 ## Example Screenshot Section
 
