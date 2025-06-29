@@ -42,20 +42,20 @@ To run this project locally, follow these steps:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/Samuel27-max/Task-Management-Tool.git](https://github.com/Samuel27-max/Task-Management-Tool.git)
+    git clone [https://github.com/Samuel27-max/Task-Mgmt-Tool.git](https://github.com/Samuel27-max/Task-Mgmt-Tool.git)
     ```
 
 2.  **Navigate to the project directory:**
     ```bash
-    cd Task-Management-Tool
+    cd Task-Mgmt-Tool
     ```
 
-3.  **Open `TaskMgmtTool.html`:**
-    Simply open the `TaskMgmtTool.html` file in your preferred web browser.
+3.  **Open `index.html`:**
+    Simply open the `index.html` file in your preferred web browser.
 
 4.  **OpenWeatherMap API Key:**
     * Obtain a free API key from [OpenWeatherMap](https://openweathermap.org/api).
-    * Locate the line `const OPENWEATHER_API_KEY = "YOUR_OPENWEATHER_API_KEY";` in the `<script>` section of `TaskMgmtTool.html`.
+    * Locate the line `const OPENWEATHER_API_KEY = "YOUR_OPENWEATHER_API_KEY";` in the `<script>` section of `index.html`.
     * Replace `"YOUR_OPENWEATHER_API_KEY"` with your actual API key.
 
     **Note:** For a production environment, it is highly recommended to proxy API calls through a backend server to secure your API key, rather than embedding it directly in client-side code.
