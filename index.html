@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management - Weather Planning</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="./styles.css" rel ="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+        #weather-container, #location-input-container, #task-management-container {
+            border: 1px solid #e2e8f0; /* Light gray border */
+            background-color: #fdfefe;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .forecast-list {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            padding: 1rem 0;
+            -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+        }
+        .forecast-item {
+            flex: 0 0 180px; /* Fixed width for forecast items */
+            background-color: #edf2f7; /* Lighter blue-gray */
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        .forecast-item:hover {
+            transform: translateY(-5px);
+        }
+        .alert {
+            color: #ef4444; /* Red color for alerts */
+            font-weight: 600;
+            background-color: #fef2f2; /* Light red background */
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            border: 1px solid #fca5a5;
+        }
+        h1, h2, h3, h4 {
+            color: #2d3748; /* Darker text for headings */
+        }
+        input[type="text"], input[type="date"], select {
+            border: 1px solid #cbd5e0;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 100%;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, select:focus {
+            outline: none;
+            border-color: #4299e1; /* Blue focus border */
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+        button {
+            background-color: #4299e1; /* Blue button */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        button:hover {
+            background-color: #3182ce; /* Darker blue on hover */
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Task specific styles */
+        .task-item {
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease-in-out;
+        }
+        .task-item.completed {
+            background-color: #f0fdf4; /* Light green for completed tasks */
+            border-color: #a7f3d0;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        .task-item input[type="checkbox"] {
+            margin-right: 1rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+        .task-details {
+            flex-grow: 1;
+        }
+        .task-title {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .task-meta {
+            font-size: 0.875rem;
+            color: #718096;
+        }
+        .priority-high { color: #ef4444; font-weight: 600; }
+        .priority-medium { color: #f59e0b; font-weight: 600; }
+        .priority-low { color: #10b981; font-weight: 600; }
+
+        /* Filter button active state */
+        .filter-buttons .active-filter-btn {
+            background-color: #e0f2fe; /* light blue */
+            border-color: #60a5fa; /* medium blue */
+            color: #2563eb; /* darker blue */
+            font-weight: 700;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            .forecast-item {
+                flex: 0 0 160px;
+            }
+            #task-form div {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            #task-form button {
+                width: 100%;
+            }
+            .filter-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-4 text-center">Task Management Tool</h1>
+        <h2 class="text-xl font-semibold mb-6 text-center text-gray-600">Weather-Based Task Planning</h2>
+
+        <div id="location-input-container" class="mb-6">
+            <h3 class="text-lg font-medium mb-3">Enter Location</h3>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input type="text" id="city-input" placeholder="e.g., Secunderabad, IN" class="flex-grow">
+                <button id="get-weather-btn">Get Weather</button>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">
+                Tip: For better results, use "City, Country Code" (e.g., "London, UK").
+            </p>
+        </div>
+
+        <div id="weather-container">
+            <h3 class="text-lg font-medium mb-3">Weather Information</h3>
+            <p id="loading-message" class="text-gray-500">Please enter a city and click 'Get Weather' to see the forecast.</p>
+            <div id="weather-display" class="mb-4"></div>
+            <div id="task-suggestions" class="mb-4"></div>
+            <div id="weather-alerts"></div>
+        </div>
+
+        <!-- Task Management Section -->
+        <div id="task-management-container" class="mt-8">
+            <h3 class="text-xl font-semibold mb-4 text-center">Your Tasks</h3>
+
+            <!-- Add New Task Form -->
+            <div class="mb-6 border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
+                <h4 class="text-lg font-medium mb-3">Add New Task</h4>
+                <form id="task-form" class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-grow">
+                        <label for="task-title" class="block text-sm font-medium text-gray-700 mb-1">Task Title</label>
+                        <input type="text" id="task-title" placeholder="e.g., Buy groceries" required>
+                    </div>
+                    <div class="flex-grow">
+                        <label for="task-deadline" class="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
+                        <input type="date" id="task-deadline">
+                    </div>
+                    <div class="flex-grow">
+                        <label for="task-priority" class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                        <select id="task-priority" class="w-full">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="sm:self-end">Add Task</button>
+                </form>
+            </div>
+
+            <!-- Task Filters and Sorting -->
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="filter-buttons flex gap-2">
+                    <button class="px-4 py-2 rounded-md border border-blue-400 text-blue-700 hover:bg-blue-50 focus:bg-blue-100 active-filter-btn" data-filter="all">All</button>
+                    <button class="px-4 py-2 rounded-md border border-blue-400 text-blue-700 hover:bg-blue-50 focus:bg-blue-100" data-filter="active">Active</button>
+                    <button class="px-4 py-2 rounded-md border border-blue-400 text-blue-700 hover:bg-blue-50 focus:bg-blue-100" data-filter="completed">Completed</button>
+                </div>
+                <div class="sort-options">
+                    <label for="sort-by" class="sr-only">Sort By</label>
+                    <select id="sort-by" class="p-2 border border-gray-300 rounded-md">
+                        <option value="added-date">Sort by: Added Date</option>
+                        <option value="deadline">Sort by: Deadline</option>
+                        <option value="priority">Sort by: Priority</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Task List Display -->
+            <div id="task-list" class="space-y-3">
+                <!-- Tasks will be injected here by JavaScript -->
+                <p class="text-gray-500 text-center">No tasks yet. Add a new task above!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Axios library for making HTTP requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        // IMPORTANT: Replace "YOUR_OPENWEATHER_API_KEY" with your actual OpenWeatherMap API key.
+        // For a production application, you should proxy this key through a backend server for security.
+        const OPENWEATHER_API_KEY = "YOUR_OPENWEATHER_API_KEY"; // <<< Replace this placeholder
+
+        const cityInput = document.getElementById('city-input');
+        const getWeatherBtn = document.getElementById('get-weather-btn');
+        const loadingMessage = document.getElementById('loading-message');
+        const weatherDisplay = document.getElementById('weather-display');
+        const taskSuggestions = document.getElementById('task-suggestions');
+        const weatherAlerts = document.getElementById('weather-alerts');
+
+        // Task Management Elements
+        const taskForm = document.getElementById('task-form');
+        const taskTitleInput = document.getElementById('task-title');
+        const taskDeadlineInput = document.getElementById('task-deadline');
+        const taskPriorityInput = document.getElementById('task-priority');
+        const taskListDiv = document.getElementById('task-list');
+        const filterButtons = document.querySelectorAll('.filter-buttons button');
+        const sortBySelect = document.getElementById('sort-by');
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let currentFilter = 'all'; // 'all', 'active', 'completed'
+        let currentSort = 'added-date'; // 'added-date', 'deadline', 'priority'
+
+        /**
+         * Fetches current weather and forecast data from OpenWeatherMap API using Axios.
+         * @param {string} city - The city name (e.g., "London, UK").
+         * @param {string} apiKey - Your OpenWeatherMap API key.
+         */
+        async function getWeatherData(city, apiKey) {
+            loadingMessage.textContent = 'Fetching weather data...';
+            weatherDisplay.innerHTML = '';
+            taskSuggestions.innerHTML = '';
+            weatherAlerts.innerHTML = '';
+
+            const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+            const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`; // 5-day / 3-hour forecast
+
+            try {
+                const [currentWeatherResponse, forecastResponse] = await axios.all([
+                    axios.get(currentWeatherUrl),
+                    axios.get(forecastUrl)
+                ]);
+
+                const currentWeatherData = currentWeatherResponse.data;
+                const forecastData = forecastResponse.data;
+
+                loadingMessage.textContent = ''; // Clear loading message
+
+                displayWeather(currentWeatherData, forecastData);
+                suggestTaskTimes(currentWeatherData, forecastData);
+                checkWeatherAlerts(currentWeatherData, forecastData);
+
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
+                loadingMessage.textContent = ''; // Clear loading message
+
+                let errorMessage = "An unexpected error occurred.";
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    if (error.response.status === 404) {
+                        errorMessage = `City not found: "${city}". Please check the spelling.`;
+                    } else if (error.response.status === 401) {
+                         errorMessage = "Invalid API Key. Please replace 'YOUR_OPENWEATHER_API_KEY' with a valid key.";
+                    } else {
+                        errorMessage = `Error fetching weather: ${error.response.data.message || error.message}.`;
+                    }
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    errorMessage = "Network error. Please check your internet connection.";
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    errorMessage = `Error: ${error.message}`;
+                }
+                weatherDisplay.innerHTML = `<p class="alert">${errorMessage}</p>`;
+            }
+        }
+
+        /**
+         * Displays current weather and a simplified forecast.
+         * @param {object} current - Current weather data.
+         * @param {object} forecast - Forecast data.
+         */
+        function displayWeather(current, forecast) {
+            let html = `
+                <h3 class="text-xl font-semibold mb-2">Current Weather in ${current.name}, ${current.sys.country}</h3>
+                <p class="text-lg">Temperature: <span class="font-bold">${Math.round(current.main.temp)}°C</span></p>
+                <p>Conditions: ${current.weather[0].description.charAt(0).toUpperCase() + current.weather[0].description.slice(1)}</p>
+                <p>Humidity: ${current.main.humidity}%</p>
+                <p>Wind Speed: ${current.wind.speed} m/s</p>
+                <p class="text-gray-500 text-sm mt-1">
+                    Sunrise: ${new Date(current.sys.sunrise * 1000).toLocaleTimeString()} |
+                    Sunset: ${new Date(current.sys.sunset * 1000).toLocaleTimeString()}
+                </p>
+
+                <h4 class="text-lg font-semibold mt-6 mb-3">Next 24 Hours Forecast (3-hour intervals):</h4>
+                <div class="forecast-list">
+            `;
+
+            // Displaying simplified forecast for the next 24 hours (8 intervals for 3-hour forecast)
+            for (let i = 0; i < Math.min(8, forecast.list.length); i++) {
+                const item = forecast.list[i];
+                const date = new Date(item.dt * 1000);
+                html += `
+                    <div class="forecast-item">
+                        <p class="text-sm font-semibold">${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p class="text-xs text-gray-600">${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
+                        <img src="http://openweathermap.org/img/wn/${item.weather[0].icon}.png" alt="${item.weather[0].description}" class="mx-auto w-10 h-10">
+                        <p class="text-md font-bold">${Math.round(item.main.temp)}°C</p>
+                        <p class="text-sm">${item.weather[0].description}</p>
+                    </div>
+                `;
+            }
+            html += `</div>`;
+            weatherDisplay.innerHTML = html;
+        }
+
+        /**
+         * Suggests optimal times for outdoor tasks based on weather forecast.
+         * @param {object} current - Current weather data.
+         * @param {object} forecast - Forecast data.
+         */
+        function suggestTaskTimes(current, forecast) {
+            let suggestions = `<h4 class="text-lg font-semibold mt-6 mb-3">Suggested Times for Outdoor Tasks:</h4><ul class="list-disc ml-5 text-gray-700">`;
+            let hasSuggestion = false;
+
+            // Example logic: Suggest times with clear sky, moderate temperature (10-25C), and low wind (< 5 m/s)
+            // Filter forecast for the next 48 hours for suggestions (16 intervals for 3-hour forecast)
+            const relevantForecast = forecast.list.slice(0, Math.min(16, forecast.list.length));
+
+            relevantForecast.forEach(item => {
+                const date = new Date(item.dt * 1000);
+                const temperature = item.main.temp;
+                const weatherDescription = item.weather[0].description.toLowerCase();
+                const windSpeed = item.wind.speed;
+
+                // Define "ideal" conditions for outdoor tasks
+                const isIdealTemperature = temperature >= 10 && temperature <= 25;
+                const isClearOrMildWeather = !weatherDescription.includes('rain') &&
+                                             !weatherDescription.includes('storm') &&
+                                             !weatherDescription.includes('snow') &&
+                                             !weatherDescription.includes('sleet') &&
+                                             !weatherDescription.includes('thunderstorm') &&
+                                             !weatherDescription.includes('drizzle');
+                const isLowWind = windSpeed < 5; // meters/second
+
+                if (isIdealTemperature && isClearOrMildWeather && isLowWind) {
+                    suggestions += `<li>${date.toLocaleString()} (Temp: ${Math.round(temperature)}°C, ${item.weather[0].description})</li>`;
+                    hasSuggestion = true;
+                }
+            });
+
+            if (!hasSuggestion) {
+                suggestions += `<li>No ideal outdoor conditions found in the next 48 hours.</li>`;
+            }
+            suggestions += `</ul>`;
+            taskSuggestions.innerHTML = suggestions;
+        }
+
+        /**
+         * Checks for and displays weather alerts.
+         * @param {object} current - Current weather data.
+         * @param {object} forecast - Forecast data.
+         */
+        function checkWeatherAlerts(current, forecast) {
+            let alerts = `<h4 class="text-lg font-semibold mt-6 mb-3">Weather Alerts:</h4><ul class="list-disc ml-5">`;
+            let hasAlert = false;
+
+            // Example logic: Alert for heavy rain, strong wind, or extreme temperatures in the next 24 hours
+            const relevantForecast = forecast.list.slice(0, Math.min(8, forecast.list.length)); // Next 24 hours
+
+            relevantForecast.forEach(item => {
+                const date = new Date(item.dt * 1000);
+                const weatherDescription = item.weather[0].description.toLowerCase();
+                const temperature = item.main.temp;
+                const windSpeed = item.wind.speed;
+
+                if (weatherDescription.includes('heavy rain') || weatherDescription.includes('thunderstorm') || weatherDescription.includes('snow')) {
+                    alerts += `<li class="alert">❗️ ATTENTION: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}: ${weatherDescription}. Consider postponing outdoor tasks!</li>`;
+                    hasAlert = true;
+                }
+                if (windSpeed > 10) { // Strong wind alert (e.g., > 10 m/s)
+                    alerts += `<li class="alert">⚠️ WARNING: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}: Strong winds (${windSpeed} m/s). Dangerous for some outdoor activities.</li>`;
+                    hasAlert = true;
+                }
+                if (temperature < 0 || temperature > 35) { // Extreme temperature alert
+                    alerts += `<li class="alert">🌡️ EXTREME TEMP: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}: Temperature ${Math.round(temperature)}°C. Be cautious with outdoor exposure.</li>`;
+                    hasAlert = true;
+                }
+            });
+
+            if (!hasAlert) {
+                alerts += `<li class="text-gray-700">No immediate weather alerts.</li>`;
+            }
+            alerts += `</ul>`;
+            weatherAlerts.innerHTML = alerts;
+        }
+
+        // Event listener for the "Get Weather" button
+        getWeatherBtn.addEventListener('click', () => {
+            const city = cityInput.value.trim();
+            if (city) {
+                getWeatherData(city, OPENWEATHER_API_KEY);
+            } else {
+                weatherDisplay.innerHTML = '<p class="alert">Please enter a city name!</p>';
+                taskSuggestions.innerHTML = '';
+                weatherAlerts.innerHTML = '';
+            }
+        });
+
+        // --- Task Management Functions ---
+
+        /**
+         * Renders tasks to the DOM based on current filter and sort order.
+         */
+        function renderTasks() {
+            let filteredAndSortedTasks = [...tasks]; // Create a shallow copy to avoid modifying original array
+
+            // Apply filter
+            if (currentFilter === 'active') {
+                filteredAndSortedTasks = filteredAndSortedTasks.filter(task => !task.completed);
+            } else if (currentFilter === 'completed') {
+                filteredAndSortedTasks = filteredAndSortedTasks.filter(task => task.completed);
+            }
+
+            // Apply sort
+            if (currentSort === 'deadline') {
+                filteredAndSortedTasks.sort((a, b) => {
+                    if (!a.deadline && !b.deadline) return 0;
+                    if (!a.deadline) return 1; // No deadline tasks go to the end
+                    if (!b.deadline) return -1;
+                    return new Date(a.deadline) - new Date(b.deadline);
+                });
+            } else if (currentSort === 'priority') {
+                const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+                filteredAndSortedTasks.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+            } else { // 'added-date' or default
+                 filteredAndSortedTasks.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+            }
+
+            taskListDiv.innerHTML = ''; // Clear existing tasks
+
+            if (filteredAndSortedTasks.length === 0) {
+                taskListDiv.innerHTML = '<p class="text-gray-500 text-center">No tasks to display for the current filter/sort.</p>';
+                return;
+            }
+
+            filteredAndSortedTasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                taskItem.dataset.id = task.id; // Store ID for easy lookup
+
+                const deadlineText = task.deadline ? `Due: ${new Date(task.deadline).toLocaleDateString()}` : 'No Deadline';
+                const priorityClass = `priority-${task.priority.toLowerCase()}`;
+
+                taskItem.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''}>
+                    <div class="task-details">
+                        <p class="task-title">${task.title}</p>
+                        <p class="task-meta">${deadlineText} | Priority: <span class="${priorityClass}">${task.priority}</span></p>
+                    </div>
+                `;
+                taskListDiv.appendChild(taskItem);
+            });
+
+            // Add event listeners for checkboxes after rendering
+            document.querySelectorAll('.task-item input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const taskId = e.target.closest('.task-item').dataset.id;
+                    toggleTaskComplete(taskId);
+                });
+            });
+
+            saveTasks(); // Save tasks to local storage after rendering
+        }
+
+        /**
+         * Adds a new task to the tasks array.
+         */
+        function addTask(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const title = taskTitleInput.value.trim();
+            const deadline = taskDeadlineInput.value; // YYYY-MM-DD format
+            const priority = taskPriorityInput.value;
+
+            if (title) {
+                const newTask = {
+                    id: Date.now().toString(), // Simple unique ID
+                    title: title,
+                    completed: false,
+                    deadline: deadline,
+                    priority: priority,
+                    addedDate: new Date().toISOString() // For sorting by added date
+                };
+                tasks.push(newTask);
+                taskTitleInput.value = ''; // Clear form
+                taskDeadlineInput.value = '';
+                taskPriorityInput.value = 'Medium';
+                renderTasks(); // Re-render tasks to include the new one
+            } else {
+                // Using a custom alert/modal would be better for UX here
+                // For this example, we'll stick to a simple alert.
+                alert("Task title cannot be empty!");
+            }
+        }
+
+        /**
+         * Toggles the completion status of a task.
+         * @param {string} id - The ID of the task to toggle.
+         */
+        function toggleTaskComplete(id) {
+            const taskIndex = tasks.findIndex(task => task.id === id);
+            if (taskIndex > -1) {
+                tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                renderTasks(); // Re-render to update status
+            }
+        }
+
+        /**
+         * Sets the current filter and re-renders tasks.
+         * @param {string} filter - 'all', 'active', or 'completed'.
+         */
+        function setFilter(filter) {
+            currentFilter = filter;
+            filterButtons.forEach(button => {
+                if (button.dataset.filter === filter) {
+                    button.classList.add('active-filter-btn'); // Highlight active button
+                } else {
+                    button.classList.remove('active-filter-btn');
+                }
+            });
+            renderTasks();
+        }
+
+        /**
+         * Sets the current sort order and re-renders tasks.
+         * @param {string} sort - 'added-date', 'deadline', or 'priority'.
+         */
+        function setSort(sort) {
+            currentSort = sort;
+            renderTasks();
+        }
+
+        /**
+         * Saves tasks to Local Storage.
+         */
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // --- Event Listeners for Task Management ---
+        taskForm.addEventListener('submit', addTask);
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => setFilter(button.dataset.filter));
+        });
+
+        sortBySelect.addEventListener('change', (e) => setSort(e.target.value));
+
+        // Initial render of tasks when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTasks();
+            // Ensure the 'All' filter button is highlighted on load
+            setFilter('all');
+        });
+
+        // Optional: Pre-populate with a default city on load, or prompt user
+        // getWeatherData("Secunderabad, IN", OPENWEATHER_API_KEY); // Uncomment to fetch on load
+    </script>
+</body>
+</html>
