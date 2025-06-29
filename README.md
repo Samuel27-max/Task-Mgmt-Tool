@@ -66,6 +66,6 @@ To run this project locally, follow these steps:
 
 ## Example Screenshot Section
 
-![Screenshot of Task Management Tool]()
+![Screenshot of Task Management Tool](https://github.com/Samuel27-max/Task-Mgmt-Tool/blob/5ff3cafd91335b67a4da57f1699aca8e9bf04342/preview.png)
 
 ---
