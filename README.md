@@ -66,6 +66,6 @@ To run this project locally, follow these steps:
 
 ## Example Screenshot Section
 
-
+![Screenshot of Task Management Tool]()
 
 ---
