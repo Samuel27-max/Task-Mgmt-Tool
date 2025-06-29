@@ -6,7 +6,159 @@
     <title>Task Management - Weather Planning</title>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="./styles.css" rel ="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+        #weather-container, #location-input-container, #task-management-container {
+            border: 1px solid #e2e8f0; /* Light gray border */
+            background-color: #fdfefe;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .forecast-list {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            padding: 1rem 0;
+            -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+        }
+        .forecast-item {
+            flex: 0 0 180px; /* Fixed width for forecast items */
+            background-color: #edf2f7; /* Lighter blue-gray */
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        .forecast-item:hover {
+            transform: translateY(-5px);
+        }
+        .alert {
+            color: #ef4444; /* Red color for alerts */
+            font-weight: 600;
+            background-color: #fef2f2; /* Light red background */
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            border: 1px solid #fca5a5;
+        }
+        h1, h2, h3, h4 {
+            color: #2d3748; /* Darker text for headings */
+        }
+        input[type="text"], input[type="date"], select {
+            border: 1px solid #cbd5e0;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 100%;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, select:focus {
+            outline: none;
+            border-color: #4299e1; /* Blue focus border */
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+        button {
+            background-color: #4299e1; /* Blue button */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        button:hover {
+            background-color: #3182ce; /* Darker blue on hover */
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Task specific styles */
+        .task-item {
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease-in-out;
+        }
+        .task-item.completed {
+            background-color: #f0fdf4; /* Light green for completed tasks */
+            border-color: #a7f3d0;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        .task-item input[type="checkbox"] {
+            margin-right: 1rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+        .task-details {
+            flex-grow: 1;
+        }
+        .task-title {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .task-meta {
+            font-size: 0.875rem;
+            color: #718096;
+        }
+        .priority-high { color: #ef4444; font-weight: 600; }
+        .priority-medium { color: #f59e0b; font-weight: 600; }
+        .priority-low { color: #10b981; font-weight: 600; }
+
+        /* Filter button active state */
+        .filter-buttons .active-filter-btn {
+            background-color: #e0f2fe; /* light blue */
+            border-color: #60a5fa; /* medium blue */
+            color: #2563eb; /* darker blue */
+            font-weight: 700;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            .forecast-item {
+                flex: 0 0 160px;
+            }
+            #task-form div {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            #task-form button {
+                width: 100%;
+            }
+            .filter-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+
     
 </head>
 <body>
